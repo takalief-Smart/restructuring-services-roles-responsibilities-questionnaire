@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استبيان الأدوار والمسؤوليات - إعادة الهيكلة | تكاليف</title>
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1e4a3b 0%, #2d6a4e 100%);
+            min-height: 100vh;
+            color: #1e3a3a;
+            padding: 20px;
+        }
+        
+        .main-header {
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-bottom: 3px solid #52b788;
+        }
+        
+        .company-badge {
+            background: rgba(82, 183, 136, 0.3);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: 600;
+            border: 1px solid #52b788;
+            color: white;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            margin-bottom: 2rem;
+            background-color: #f8faf8;
+            border: 1px solid #e4f2e4;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #1e4a3b 0%, #2d6a4e 100%);
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            border-bottom: 2px solid #52b788;
+        }
+        
+        .btn-custom {
+            background: #52b788;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid #1e4a3b;
+        }
+        
+        .btn-custom:hover {
+            background: #2d6a4e;
+            transform: scale(1.05);
+            color: white;
+            box-shadow: 0 5px 20px rgba(82, 183, 136, 0.4);
+        }
+        
+        .btn-excel {
+            background: #1e4a3b;
+            color: white;
+            border: 2px solid #52b788;
+        }
+        
+        .btn-excel:hover {
+            background: #2d6a4e;
+            color: white;
+        }
+        
+        .btn-pdf {
+            background: #4a6b5a;
+            color: white;
+            border: 2px solid #52b788;
+        }
+        
+        .btn-pdf:hover {
+            background: #1e4a3b;
+            color: white;
+        }
+        
+        .form-label {
+            color: #2d6a4e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e4f2e4;
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #52b788;
+            box-shadow: 0 0 0 0.2rem rgba(82, 183, 136, 0.25);
+        }
+        
+        .data-entry-section {
+            background: #f0f7f0;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 3px solid #52b788;
+        }
+        
+        .client-info-card {
+            background: linear-gradient(135deg, #f8faf8 0%, #ffffff 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 2px solid #52b788;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .client-info-title {
+            color: #1e4a3b;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .client-info-title i {
+            color: #52b788;
+            margin-left: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .required-field::after {
+            content: "*";
+            color: #dc3545;
+            margin-right: 4px;
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            padding: 3rem 0 1.5rem;
+            margin-top: 3rem;
+            border-radius: 50px 50px 0 0;
+            border-top: 3px solid #52b788;
+        }
+        
+        .footer-links {
+            color: #e4f2e4;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links:hover {
+            color: #52b788;
+            padding-right: 5px;
+        }
+        
+        .contact-item {
+            margin-bottom: 10px;
+            color: #e4f2e4;
+        }
+        
+        .contact-item i {
+            color: #52b788;
+            margin-left: 10px;
+            width: 20px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(82, 183, 136, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            color: #52b788;
+            transition: all 0.3s ease;
+            border: 1px solid #52b788;
+        }
+        
+        .social-icon:hover {
+            background: #52b788;
+            color: #0e3b2c;
+            transform: translateY(-3px);
+        }
+        
+        .nav-tabs-custom {
+            border-bottom: 3px solid #52b788;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #1e4a3b 0%, #2d6a4e 100%);
+            border-radius: 50px;
+            padding: 0.5rem;
+        }
+        
+        .nav-tabs-custom .nav-link {
+            color: white !important;
+            font-weight: 600;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs-custom .nav-link i {
+            color: white;
+        }
+        
+        .nav-tabs-custom .nav-link.active {
+            color: #1e4a3b !important;
+            background: #52b788;
+            border: 2px solid white;
+        }
+        
+        .nav-tabs-custom .nav-link.active i {
+            color: #1e4a3b;
+        }
+        
+        .preview-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 2px solid #52b788;
+            margin-bottom: 1.5rem;
+        }
+        
+        .preview-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed #e4f2e4;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .preview-label {
+            font-weight: 600;
+            color: #1e4a3b;
+            width: 45%;
+        }
+        
+        .preview-value {
+            color: #2d6a4e;
+            width: 55%;
+            text-align: left;
+        }
+        
+        .role-item {
+            background: #f8faf8;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e4f2e4;
+        }
+        
+        .responsibility-item {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            border-right: 3px solid #52b788;
+        }
+        
+        /* PDF Export Container */
+        #pdf-export-container {
+            position: fixed;
+            top: -99999px;
+            left: -99999px;
+            width: 800px;
+            background: white;
+            z-index: 9999;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .pdf-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            direction: rtl;
+        }
+        
+        .pdf-cover {
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 30px;
+            margin-bottom: 30px;
+            border: 4px solid #52b788;
+            text-align: center;
+        }
+        
+        .pdf-section-title {
+            color: #1e4a3b;
+            font-size: 20px;
+            font-weight: 800;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #52b788;
+        }
+        
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+            border: 1px solid #52b788;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .pdf-table th {
+            background: #1e4a3b;
+            color: white;
+            padding: 10px 8px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .pdf-table td {
+            padding: 8px;
+            border: 1px solid #e4f2e4;
+            text-align: center;
+            font-size: 11px;
+        }
+        
+        .pdf-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            border-radius: 15px;
+            border: 2px solid #52b788;
+        }
+        
+        .badge-executive {
+            background: #1e4a3b;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-manager {
+            background: #52b788;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-supervisor {
+            background: #a7d0b0;
+            color: #1e4a3b;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header text-center no-print">
+        <div class="container">
+            <span class="company-badge mb-3">تكاليف | حلول أعمال ذكية</span>
+            <h1 class="display-4 fw-bold mt-3" style="color: white;">
+                <i class="fas fa-users me-3"></i>
+                استبيان الأدوار والمسؤوليات
+            </h1>
+            <p class="lead" style="color: white;">خدمة الاستشارات المؤقتة لإعادة الهيكلة - تحليل الأدوار والمسؤوليات الوظيفية</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs-custom nav-fill" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="data-entry-tab" data-bs-toggle="tab" data-bs-target="#dataEntry" type="button" role="tab">
+                    <i class="fas fa-edit me-2"></i> استبيان المعلومات
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab">
+                    <i class="fas fa-eye me-2"></i> معاينة التقرير
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Tab 1: Data Entry -->
+            <div class="tab-pane fade show active" id="dataEntry" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-users me-2"></i> استبيان الأدوار والمسؤوليات - إعادة الهيكلة
+                    </div>
+                    <div class="card-body">
+                        <!-- بيانات المنشأة -->
+                        <div class="client-info-card">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="client-info-title"><i class="fas fa-building"></i> بيانات المنشأة</div>
+                                    <div class="mb-3"><label class="form-label required-field">اسم المنشأة</label><input type="text" class="form-control" id="companyName" placeholder="أدخل اسم المنشأة"></div>
+                                    <div class="mb-3"><label class="form-label">النشاط الرئيسي</label><input type="text" class="form-control" id="businessActivity" placeholder="مثال: تصنيع / تجارة / خدمات"></div>
+                                    <div class="mb-3"><label class="form-label">عدد الموظفين الإجمالي</label><input type="number" class="form-control" id="totalEmployees" placeholder="عدد الموظفين"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="client-info-title"><i class="fas fa-address-card"></i> بيانات المسؤول</div>
+                                    <div class="mb-3"><label class="form-label required-field">اسم المسؤول عن الهيكل الوظيفي</label><input type="text" class="form-control" id="contactPerson" placeholder="أدخل اسم المسؤول"></div>
+                                    <div class="mb-3"><label class="form-label required-field">المسمى الوظيفي</label><input type="text" class="form-control" id="jobTitle" placeholder="مثال: مدير الموارد البشرية"></div>
+                                    <div class="mb-3"><label class="form-label required-field">البريد الإلكتروني</label><input type="email" class="form-control" id="clientEmail" placeholder="example@company.com"></div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-4"><div class="mb-3"><label class="form-label">رقم الهاتف</label><input type="tel" class="form-control" id="clientPhone" placeholder="رقم الهاتف"></div></div>
+                                <div class="col-md-4"><div class="mb-3"><label class="form-label">تاريخ التعبئة</label><input type="date" class="form-control" id="submissionDate" value="2026-03-28"></div></div>
+                                <div class="col-md-4"><div class="mb-3"><label class="form-label">العملة المستخدمة</label><select class="form-select" id="currencySelect"><option value="EGP" selected>جنيه مصري (EGP)</option><option value="SAR">ريال سعودي (SAR)</option><option value="AED">درهم إماراتي (AED)</option><option value="USD">دولار أمريكي (USD)</option></select></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الأول: معلومات عامة عن الهيكل الوظيفي -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-chart-simple me-2"></i> القسم الأول: معلومات عامة عن الهيكل الوظيفي</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3"><label class="form-label">عدد المستويات الإدارية</label><input type="number" class="form-control" id="managementLevels" placeholder="مثال: 4 مستويات"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3"><label class="form-label">عدد الإدارات / الأقسام</label><input type="number" class="form-control" id="departmentCount" placeholder="عدد الإدارات"></div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">هل يوجد توصيف وظيفي مكتوب لجميع الوظائف؟</label><select class="form-select" id="hasJobDescriptions"><option value="">اختر...</option><option value="نعم، لجميع الوظائف">نعم، لجميع الوظائف</option><option value="نعم، لبعض الوظائف">نعم، لبعض الوظائف</option><option value="لا يوجد توصيف وظيفي">لا يوجد توصيف وظيفي</option></select></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الثاني: الأدوار والمسؤوليات الوظيفية (ديناميكي) -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-user-tie me-2"></i> القسم الثاني: الأدوار والمسؤوليات الوظيفية</h4>
+                            <div id="rolesContainer"></div>
+                            <button class="btn btn-custom btn-sm mt-2" onclick="addRole()"><i class="fas fa-plus-circle me-1"></i> إضافة دور وظيفي</button>
+                        </div>
+
+                        <!-- القسم الثالث: تقييم وضوح الأدوار -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-clipboard-list me-2"></i> القسم الثالث: تقييم وضوح الأدوار</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3"><label class="form-label">مدى وضوح المسؤوليات الوظيفية للموظفين</label><select class="form-select" id="clarityLevel"><option value="">اختر...</option><option value="واضحة جداً">واضحة جداً</option><option value="واضحة إلى حد ما">واضحة إلى حد ما</option><option value="غير واضحة">غير واضحة</option></select></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3"><label class="form-label">نسبة الموظفين الذين لديهم توصيف وظيفي محدد</label><input type="text" class="form-control" id="jobDescCoverage" placeholder="مثال: 75%"></div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">هل يوجد تداخل في المسؤوليات بين الإدارات؟</label><select class="form-select" id="responsibilityOverlap"><option value="">اختر...</option><option value="نعم، تداخل واضح">نعم، تداخل واضح</option><option value="نعم، تداخل محدود">نعم، تداخل محدود</option><option value="لا يوجد تداخل">لا يوجد تداخل</option></select></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الرابع: الفجوات والثغرات -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-exclamation-triangle me-2"></i> القسم الرابع: الفجوات والثغرات الوظيفية</h4>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">المسؤوليات غير المغطاة أو المهملة حالياً</label><textarea class="form-control" id="uncoveredResponsibilities" rows="3" placeholder="اذكر المسؤوليات التي لا يوجد من يتولى تنفيذها"></textarea></div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">الوظائف الشاغرة التي تؤثر على سير العمل</label><textarea class="form-control" id="vacantPositions" rows="3" placeholder="اذكر الوظائف الشاغرة وتأثيرها"></textarea></div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">نقاط الضعف في هيكل الأدوار والمسؤوليات</label><textarea class="form-control" id="roleWeaknesses" rows="3" placeholder="اذكر نقاط الضعف في توزيع الأدوار"></textarea></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الخامس: تطوير الأدوار والمسؤوليات -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-chart-line me-2"></i> القسم الخامس: تطوير الأدوار والمسؤوليات</h4>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">المقترحات لتطوير وتبسيط الأدوار والمسؤوليات</label><textarea class="form-control" id="developmentSuggestions" rows="3" placeholder="اذكر المقترحات لتحسين هيكل الأدوار"></textarea></div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">الاحتياجات التدريبية لتأهيل الموظفين لأدوارهم</label><textarea class="form-control" id="trainingNeeds" rows="3" placeholder="اذكر الاحتياجات التدريبية الحالية"></textarea></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- القسم السادس: معلومات إضافية -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-info-circle me-2"></i> القسم السادس: معلومات إضافية</h4>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3"><label class="form-label">أي معلومات إضافية حول الأدوار والمسؤوليات</label><textarea class="form-control" id="additionalInfo" rows="4" placeholder="أي معلومات إضافية"></textarea></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button class="btn btn-custom btn-lg" onclick="refreshPreview()"><i class="fas fa-sync-alt me-2"></i> تحديث المعاينة</button>
+                            <button class="btn btn-custom btn-lg mx-2" onclick="resetForm()"><i class="fas fa-undo me-2"></i> إعادة تعيين</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Preview -->
+            <div class="tab-pane fade" id="preview" role="tabpanel">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-file-alt me-2"></i> معاينة تقرير الأدوار والمسؤوليات</div>
+                    <div class="card-body" id="previewContent"></div>
+                </div>
+                <div class="text-center mb-4 no-print">
+                    <button class="btn btn-excel btn-lg mx-2" onclick="exportToExcel()"><i class="fas fa-file-excel me-2"></i> تصدير (Excel)</button>
+                    <button class="btn btn-pdf btn-lg mx-2" onclick="exportToPDF(event)"><i class="fas fa-file-pdf me-2"></i> تصدير التقرير (PDF)</button>
+                    <button class="btn btn-custom btn-lg mx-2" onclick="window.print()"><i class="fas fa-print me-2"></i> طباعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer no-print">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4"><h5 style="color: #52b788;">تكاليف - حلول أعمال ذكية</h5><p style="color: #e4f2e4;">نقدم خدمات استشارات إعادة الهيكلة وتحليل الأدوار والمسؤوليات الوظيفية.</p></div>
+                <div class="col-md-4 mb-4"><h5 style="color: #52b788;"><i class="fas fa-address-card me-2"></i>معلومات الاتصال</h5><div class="contact-item"><i class="fas fa-map-marker-alt"></i> القاهرة - مصر</div><div class="contact-item"><i class="fas fa-phone-alt"></i><a href="tel:+201044391177" class="footer-links">+20 104 439 1177</a></div><div class="contact-item"><i class="fas fa-envelope"></i><a href="mailto:info@takalief.com" class="footer-links">info@takalief.com</a></div><div class="contact-item"><i class="fas fa-globe"></i><a href="https://www.takalief.com" class="footer-links" target="_blank">www.takalief.com</a></div></div>
+                <div class="col-md-4 mb-4"><h5 style="color: #52b788;"><i class="fas fa-share-alt me-2"></i>تابعنا على</h5><div class="text-center"><a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-icon"><i class="fab fa-twitter"></i></a><a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a><a href="#" class="social-icon"><i class="fab fa-instagram"></i></a><a href="#" class="social-icon"><i class="fab fa-youtube"></i></a><a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a></div></div>
+            </div>
+            <hr>
+            <div class="row mt-3"><div class="col-md-6 text-md-start text-center"><p class="mb-0" style="color: #e4f2e4;"><i class="fas fa-copyright me-2" style="color: #52b788;"></i>2026 تكاليف - حلول أعمال ذكية. جميع الحقوق محفوظة</p></div><div class="col-md-6 text-md-end text-center"><a href="#" class="footer-links me-3">سياسة الخصوصية</a><a href="#" class="footer-links me-3">شروط الاستخدام</a><a href="#" class="footer-links">الدعم الفني</a></div></div>
+        </div>
+    </footer>
+
+    <div id="pdf-export-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let roleCount = 0;
+        let selectedCurrency = 'EGP';
+        const currencySymbols = { 'EGP': 'جنيه', 'SAR': 'ريال', 'AED': 'درهم', 'USD': 'دولار' };
+        const currencyNames = { 'EGP': 'جنيه مصري', 'SAR': 'ريال سعودي', 'AED': 'درهم إماراتي', 'USD': 'دولار أمريكي' };
+        
+        document.getElementById('currencySelect').addEventListener('change', function() {
+            selectedCurrency = this.value;
+            const symbol = currencySymbols[selectedCurrency];
+            document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = symbol);
+        });
+        
+        // Roles management
+        function addRole() {
+            roleCount++;
+            const container = document.getElementById('rolesContainer');
+            const newRole = document.createElement('div');
+            newRole.className = 'role-item';
+            newRole.id = `role-${roleCount}`;
+            newRole.innerHTML = `
+                <div class="row mb-2">
+                    <div class="col-md-5"><input type="text" class="form-control" placeholder="المسمى الوظيفي" id="roleTitle${roleCount}"></div>
+                    <div class="col-md-4"><select class="form-select" id="roleLevel${roleCount}"><option value="">المستوى الإداري</option><option value="تنفيذي">تنفيذي</option><option value="إداري">إداري</option><option value="إشرافي">إشرافي</option><option value="تشغيلي">تشغيلي</option></select></div>
+                    <div class="col-md-3"><button class="btn btn-danger btn-sm" onclick="removeRole(${roleCount})"><i class="fas fa-trash"></i> حذف</button></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12"><label class="form-label small">المسؤوليات الرئيسية</label><textarea class="form-control" rows="2" placeholder="اذكر المسؤوليات الرئيسية لهذا الدور" id="roleResponsibilities${roleCount}"></textarea></div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6"><input type="text" class="form-control" placeholder="المشرف المباشر" id="roleSupervisor${roleCount}"></div>
+                    <div class="col-md-6"><input type="number" class="form-control" placeholder="عدد المشرفين عليهم" id="roleSubordinates${roleCount}"></div>
+                </div>
+            `;
+            container.appendChild(newRole);
+        }
+        
+        function removeRole(id) {
+            const element = document.getElementById(`role-${id}`);
+            if (element) element.remove();
+        }
+        
+        function getRolesList() {
+            let html = '';
+            for (let i = 1; i <= roleCount; i++) {
+                const title = document.getElementById(`roleTitle${i}`) ? document.getElementById(`roleTitle${i}`).value : '';
+                const levelSelect = document.getElementById(`roleLevel${i}`);
+                const level = levelSelect && levelSelect.value ? levelSelect.options[levelSelect.selectedIndex].text : '';
+                const responsibilities = document.getElementById(`roleResponsibilities${i}`) ? document.getElementById(`roleResponsibilities${i}`).value : '';
+                const supervisor = document.getElementById(`roleSupervisor${i}`) ? document.getElementById(`roleSupervisor${i}`).value : '';
+                const subordinates = document.getElementById(`roleSubordinates${i}`) ? document.getElementById(`roleSubordinates${i}`).value : '';
+                if (title) {
+                    html += `<div class="preview-item"><span class="preview-label"><strong>${title}</strong><br><span class="small text-muted">${level ? '[' + level + ']' : ''}</span></span><span class="preview-value">المشرف المباشر: ${supervisor || 'غير محدد'}<br>عدد المشرفين عليهم: ${subordinates || '0'}<br>المسؤوليات: ${responsibilities || 'غير محددة'}</span></div>`;
+                }
+            }
+            return html || '<div class="preview-item"><span class="preview-label">لا توجد أدوار مضافة</span><span class="preview-value">—</span></div>';
+        }
+        
+        function getFieldValue(id, defaultValue = '—') {
+            const element = document.getElementById(id);
+            return element && element.value.trim() !== '' ? element.value.trim() : defaultValue;
+        }
+        
+        function getSelectText(id, defaultValue = '—') {
+            const select = document.getElementById(id);
+            if (select && select.options[select.selectedIndex] && select.options[select.selectedIndex].value !== '') {
+                return select.options[select.selectedIndex].text;
+            }
+            return defaultValue;
+        }
+        
+        function refreshPreview() {
+            const previewHtml = `
+                <div class="preview-card"><h4 style="color: #1e4a3b;"><i class="fas fa-building me-2"></i>بيانات المنشأة</h4>
+                <div class="preview-item"><span class="preview-label">اسم المنشأة</span><span class="preview-value">${getFieldValue('companyName')}</span></div>
+                <div class="preview-item"><span class="preview-label">النشاط الرئيسي</span><span class="preview-value">${getFieldValue('businessActivity')}</span></div>
+                <div class="preview-item"><span class="preview-label">عدد الموظفين</span><span class="preview-value">${getFieldValue('totalEmployees')}</span></div>
+                <div class="preview-item"><span class="preview-label">المسؤول</span><span class="preview-value">${getFieldValue('contactPerson')}</span></div>
+                <div class="preview-item"><span class="preview-label">المسمى الوظيفي</span><span class="preview-value">${getFieldValue('jobTitle')}</span></div>
+                <div class="preview-item"><span class="preview-label">البريد الإلكتروني</span><span class="preview-value">${getFieldValue('clientEmail')}</span></div>
+                <div class="preview-item"><span class="preview-label">رقم الهاتف</span><span class="preview-value">${getFieldValue('clientPhone')}</span></div>
+                <div class="preview-item"><span class="preview-label">العملة</span><span class="preview-value">${currencyNames[selectedCurrency]}</span></div></div>
+                
+                <div class="preview-card"><h4 style="color: #1e4a3b;"><i class="fas fa-chart-simple me-2"></i>معلومات عامة</h4>
+                <div class="preview-item"><span class="preview-label">عدد المستويات الإدارية</span><span class="preview-value">${getFieldValue('managementLevels')}</span></div>
+                <div class="preview-item"><span class="preview-label">عدد الإدارات</span><span class="preview-value">${getFieldValue('departmentCount')}</span></div>
+                <div class="preview-item"><span class="preview-label">وجود توصيف وظيفي</span><span class="preview-value">${getSelectText('hasJobDescriptions')}</span></div></div>
+                
+                <div class="preview-card"><h4 style="color: #1e4a3b;"><i class="fas fa-user-tie me-2"></i>الأدوار والمسؤوليات الوظيفية</h4>${getRolesList()}</div>
+                
+                <div class="preview-card"><h4 style="color: #1e4a3b;"><i class="fas fa-clipboard-list me-2"></i>تقييم وضوح الأدوار</h4>
+                <div class="preview-item"><span class="preview-label">وضوح المسؤوليات</span><span class="preview-value">${getSelectText('clarityLevel')}</span></div>
+                <div class="preview-item"><span class="preview-label">تغطية التوصيف الوظيفي</span><span class="preview-value">${getFieldValue('jobDescCoverage')}</span></div>
+                <div class="preview-item"><span class="preview-label">تداخل المسؤوليات</span><span class="preview-value">${getSelectText('responsibilityOverlap')}</span></div></div>
+                
+                <div class="preview-card"><h4 style="color: #1e4a3b;"><i class="fas fa-exclamation-triangle me-2"></i>الفجوات والثغرات</h4>
+                <div class="preview-item"><span class="preview-label">مسؤوليات غير مغطاة</span><span class="preview-value">${getFieldValue('uncoveredResponsibilities')}</span></div>
+                <div class="preview-item"><span class="preview-label">وظائف شاغرة مؤثرة</span><span class="preview-value">${getFieldValue('vacantPositions')}</span></div>
+                <div class="preview-item"><span class="preview-label">نقاط الضعف</span><span class="preview-value">${getFieldValue('roleWeaknesses')}</span></div></div>
+                
+                <div class="preview-card"><h4 style="color: #1e4a3b;"><i class="fas fa-chart-line me-2"></i>تطوير الأدوار</h4>
+                <div class="preview-item"><span class="preview-label">مقترحات التطوير</span><span class="preview-value">${getFieldValue('developmentSuggestions')}</span></div>
+                <div class="preview-item"><span class="preview-label">احتياجات تدريبية</span><span class="preview-value">${getFieldValue('trainingNeeds')}</span></div></div>
+                
+                <div class="preview-card"><h4 style="color: #1e4a3b;"><i class="fas fa-info-circle me-2"></i>معلومات إضافية</h4>
+                <div class="preview-item"><span class="preview-label">ملاحظات</span><span class="preview-value">${getFieldValue('additionalInfo')}</span></div></div>
+                
+                <div class="preview-card text-center"><hr><p style="color: #1e4a3b; font-weight: 600;"><i class="fas fa-check-circle me-2"></i>تم تعبئة استبيان الأدوار والمسؤوليات بنجاح</p><p class="text-muted small">تاريخ الإصدار: ${new Date().toLocaleDateString('ar-EG')}</p></div>
+            `;
+            document.getElementById('previewContent').innerHTML = previewHtml;
+        }
+        
+        function resetForm() { if(confirm('هل أنت متأكد من إعادة تعيين جميع البيانات؟')) location.reload(); }
+        
+        function exportToExcel() {
+            const companyName = getFieldValue('companyName', 'منشأة');
+            const excelData = [
+                ['استبيان الأدوار والمسؤوليات', 'خدمة الاستشارات المؤقتة لإعادة الهيكلة'],
+                ['تاريخ التقرير', new Date().toLocaleDateString('ar-EG')],
+                ['اسم المنشأة', companyName],
+                ['المسؤول', getFieldValue('contactPerson')],
+                [],
+                ['1. بيانات المنشأة'],
+                ['اسم المنشأة', getFieldValue('companyName')], ['النشاط الرئيسي', getFieldValue('businessActivity')],
+                ['عدد الموظفين', getFieldValue('totalEmployees')], ['المسؤول', getFieldValue('contactPerson')],
+                ['المسمى الوظيفي', getFieldValue('jobTitle')], ['البريد الإلكتروني', getFieldValue('clientEmail')],
+                ['رقم الهاتف', getFieldValue('clientPhone')], [],
+                ['2. معلومات عامة'],
+                ['عدد المستويات الإدارية', getFieldValue('managementLevels')],
+                ['عدد الإدارات', getFieldValue('departmentCount')],
+                ['وجود توصيف وظيفي', getSelectText('hasJobDescriptions')], [],
+                ['3. الأدوار والمسؤوليات'],
+                ['المسمى الوظيفي', 'المستوى', 'المشرف المباشر', 'عدد المشرفين', 'المسؤوليات']
+            ];
+            for (let i = 1; i <= roleCount; i++) {
+                const title = document.getElementById(`roleTitle${i}`) ? document.getElementById(`roleTitle${i}`).value : '';
+                if (title) {
+                    const levelSelect = document.getElementById(`roleLevel${i}`);
+                    const level = levelSelect && levelSelect.value ? levelSelect.options[levelSelect.selectedIndex].text : '';
+                    const supervisor = document.getElementById(`roleSupervisor${i}`) ? document.getElementById(`roleSupervisor${i}`).value : '';
+                    const subordinates = document.getElementById(`roleSubordinates${i}`) ? document.getElementById(`roleSubordinates${i}`).value : '';
+                    const responsibilities = document.getElementById(`roleResponsibilities${i}`) ? document.getElementById(`roleResponsibilities${i}`).value : '';
+                    excelData.push([title, level, supervisor, subordinates, responsibilities]);
+                }
+            }
+            excelData.push([], ['4. تقييم وضوح الأدوار'], ['وضوح المسؤوليات', getSelectText('clarityLevel')], ['تغطية التوصيف الوظيفي', getFieldValue('jobDescCoverage')], ['تداخل المسؤوليات', getSelectText('responsibilityOverlap')]);
+            excelData.push([], ['5. الفجوات والثغرات'], ['مسؤوليات غير مغطاة', getFieldValue('uncoveredResponsibilities')], ['وظائف شاغرة مؤثرة', getFieldValue('vacantPositions')], ['نقاط الضعف', getFieldValue('roleWeaknesses')]);
+            excelData.push([], ['6. تطوير الأدوار'], ['مقترحات التطوير', getFieldValue('developmentSuggestions')], ['احتياجات تدريبية', getFieldValue('trainingNeeds')]);
+            excelData.push([], ['7. معلومات إضافية'], ['ملاحظات', getFieldValue('additionalInfo')], [], ['للتواصل: info@takalief.com | +20 104 439 1177'], ['www.takalief.com']);
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            XLSX.utils.book_append_sheet(wb, ws, 'الأدوار_والمسؤوليات');
+            XLSX.writeFile(wb, `Roles_Responsibilities_${companyName.replace(/\s/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+            alert('تم تصدير استبيان Excel بنجاح');
+        }
+        
+        async function exportToPDF(event) {
+            try {
+                const exportBtn = event.target;
+                const originalText = exportBtn.innerHTML;
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري إعداد التقرير...';
+                exportBtn.disabled = true;
+                
+                const pdfContainer = document.getElementById('pdf-export-container');
+                pdfContainer.innerHTML = '';
+                pdfContainer.style.opacity = '1';
+                pdfContainer.style.position = 'absolute';
+                pdfContainer.style.top = '0';
+                pdfContainer.style.left = '0';
+                pdfContainer.style.zIndex = '9999';
+                
+                const companyName = getFieldValue('companyName', 'غير محدد');
+                const contactPerson = getFieldValue('contactPerson', 'غير محدد');
+                const currentDate = new Date().toLocaleDateString('ar-EG');
+                
+                let rolesRows = '';
+                for (let i = 1; i <= roleCount; i++) {
+                    const title = document.getElementById(`roleTitle${i}`) ? document.getElementById(`roleTitle${i}`).value : '';
+                    if (title) {
+                        const levelSelect = document.getElementById(`roleLevel${i}`);
+                        const level = levelSelect && levelSelect.value ? levelSelect.options[levelSelect.selectedIndex].text : '';
+                        const supervisor = document.getElementById(`roleSupervisor${i}`) ? document.getElementById(`roleSupervisor${i}`).value : '';
+                        const subordinates = document.getElementById(`roleSubordinates${i}`) ? document.getElementById(`roleSubordinates${i}`).value : '';
+                        const responsibilities = document.getElementById(`roleResponsibilities${i}`) ? document.getElementById(`roleResponsibilities${i}`).value : '';
+                        rolesRows += `      <tr><td style="text-align:right;">${title}</td><td>${level || '—'}</td><td>${supervisor || '—'}</td><td>${subordinates || '—'}</td><td style="text-align:right;">${responsibilities || '—'}</td></tr>\n`;
+                    }
+                }
+                
+                const pdfWrapper = document.createElement('div');
+                pdfWrapper.className = 'pdf-wrapper';
+                pdfWrapper.innerHTML = `
+                    <div class="pdf-cover">
+                        <h1>استبيان الأدوار والمسؤوليات</h1>
+                        <h3>خدمة الاستشارات المؤقتة لإعادة الهيكلة</h3>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-top: 30px; border: 2px solid #52b788;">
+                            <p style="font-size: 18px;"><i class="fas fa-building me-2"></i>المنشأة: ${companyName}</p>
+                            <p style="font-size: 16px;"><i class="fas fa-user me-2"></i>المسؤول: ${contactPerson}</p>
+                            <p style="font-size: 16px;"><i class="fas fa-calendar me-2"></i>تاريخ التقرير: ${currentDate}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="page-break-before: always;">
+                        <h2 class="pdf-section-title">بيانات المنشأة</h2>
+                        <table class="pdf-table">
+                             <th style="width: 35%;">البيان</th><th>القيمة</th>
+                             <tr><td style="text-align:right;"><strong>اسم المنشأة</strong></td><td>${getFieldValue('companyName')}</td></tr>
+                             <tr><td style="text-align:right;"><strong>النشاط الرئيسي</strong></td><td>${getFieldValue('businessActivity')}</td></tr>
+                             <tr><td style="text-align:right;"><strong>عدد الموظفين</strong></td><td>${getFieldValue('totalEmployees')}</td></tr>
+                             <tr><td style="text-align:right;"><strong>المسؤول</strong></td><td>${getFieldValue('contactPerson')}</td></tr>
+                             <tr><td style="text-align:right;"><strong>المسمى الوظيفي</strong></td><td>${getFieldValue('jobTitle')}</td></tr>
+                             <tr><td style="text-align:right;"><strong>البريد الإلكتروني</strong></td><td>${getFieldValue('clientEmail')}</td></tr>
+                             <tr><td style="text-align:right;"><strong>رقم الهاتف</strong></td><td>${getFieldValue('clientPhone')}</td></tr>
+                             <tr><td style="text-align:right;"><strong>العملة</strong></td><td>${currencyNames[selectedCurrency]}</td></tr>
+                         </table>
+                        
+                        <h2 class="pdf-section-title">معلومات عامة</h2>
+                        <table class="pdf-table">
+                             <th style="width: 35%;">البيان</th><th>القيمة</th>
+                             <tr><td style="text-align:right;">عدد المستويات الإدارية</td><td>${getFieldValue('managementLevels')}</td></tr>
+                             <tr><td style="text-align:right;">عدد الإدارات</td><td>${getFieldValue('departmentCount')}</td></tr>
+                             <tr><td style="text-align:right;">وجود توصيف وظيفي</td><td>${getSelectText('hasJobDescriptions')}</td></tr>
+                         </table>
+                        
+                        <h2 class="pdf-section-title">الأدوار والمسؤوليات الوظيفية</h2>
+                        <table class="pdf-table">
+                             <th>المسمى الوظيفي</th><th>المستوى</th><th>المشرف المباشر</th><th>عدد المشرفين</th><th>المسؤوليات الرئيسية</th>
+                             ${rolesRows || '<tr><td colspan="5" style="text-align:center;">لا توجد أدوار مضافة</td></tr>'}
+                         </table>
+                        
+                        <h2 class="pdf-section-title">تقييم وضوح الأدوار</h2>
+                        <table class="pdf-table">
+                             <th style="width: 35%;">البيان</th><th>القيمة</th>
+                             <tr><td style="text-align:right;">وضوح المسؤوليات</td><td>${getSelectText('clarityLevel')}</td></tr>
+                             <tr><td style="text-align:right;">تغطية التوصيف الوظيفي</td><td>${getFieldValue('jobDescCoverage')}</td></tr>
+                             <tr><td style="text-align:right;">تداخل المسؤوليات</td><td>${getSelectText('responsibilityOverlap')}</td></tr>
+                         </table>
+                        
+                        <h2 class="pdf-section-title">الفجوات والثغرات الوظيفية</h2>
+                        <table class="pdf-table">
+                             <th style="width: 35%;">البيان</th><th>القيمة</th>
+                             <tr><td style="text-align:right;">مسؤوليات غير مغطاة</td><td>${getFieldValue('uncoveredResponsibilities')}</td></tr>
+                             <tr><td style="text-align:right;">وظائف شاغرة مؤثرة</td><td>${getFieldValue('vacantPositions')}</td></tr>
+                             <tr><td style="text-align:right;">نقاط الضعف</td><td>${getFieldValue('roleWeaknesses')}</td></tr>
+                         </table>
+                        
+                        <h2 class="pdf-section-title">تطوير الأدوار والمسؤوليات</h2>
+                        <table class="pdf-table">
+                             <th style="width: 35%;">البيان</th><th>القيمة</th>
+                             <tr><td style="text-align:right;">مقترحات التطوير</td><td>${getFieldValue('developmentSuggestions')}</td></tr>
+                             <tr><td style="text-align:right;">احتياجات تدريبية</td><td>${getFieldValue('trainingNeeds')}</td></tr>
+                         </table>
+                        
+                        <h2 class="pdf-section-title">معلومات إضافية</h2>
+                        <table class="pdf-table">
+                             <th style="width: 35%;">البيان</th><th>القيمة</th>
+                             <tr><td style="text-align:right;">ملاحظات</td><td>${getFieldValue('additionalInfo')}</td></tr>
+                         </table>
+                    </div>
+                    
+                    <div style="page-break-before: always; margin-top: 40px;">
+                        <div class="pdf-footer">
+                            <div style="font-size: 20px; font-weight: 700; color: #52b788;">تكاليف - حلول أعمال ذكية</div>
+                            <div>القاهرة - مصر | +20 104 439 1177 | info@takalief.com</div>
+                            <hr style="width: 150px; margin: 15px auto; border: 1px solid #52b788;">
+                            <p>تم تعبئة هذا الاستبيان لتحليل الأدوار والمسؤوليات في المنشأة</p>
+                            <p>تاريخ الإصدار: ${currentDate}</p>
+                            <p style="margin-top: 20px;">توقيع المسؤول: _________________________</p>
+                            <p>جميع الحقوق محفوظة</p>
+                        </div>
+                    </div>
+                `;
+                
+                pdfContainer.appendChild(pdfWrapper);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const canvas = await html2canvas(pdfContainer, { scale: 2, backgroundColor: '#ffffff', logging: false });
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210;
+                const pageHeight = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save(`Roles_Responsibilities_${companyName.replace(/[^\u0600-\u06FFa-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+                
+                pdfContainer.innerHTML = '';
+                pdfContainer.style.opacity = '0';
+                pdfContainer.style.position = 'fixed';
+                pdfContainer.style.top = '-99999px';
+                
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+                alert('تم تصدير التقرير بنجاح');
+            } catch (error) {
+                alert('حدث خطأ: ' + error.message);
+                const exportBtn = event.target;
+                exportBtn.innerHTML = '<i class="fas fa-file-pdf me-2"></i> تصدير التقرير (PDF)';
+                exportBtn.disabled = false;
+            }
+        }
+        
+        function init() {
+            refreshPreview();
+            const today = new Date().toISOString().split('T')[0];
+            if (document.getElementById('submissionDate')) document.getElementById('submissionDate').value = today;
+            const symbol = currencySymbols[selectedCurrency];
+            document.querySelectorAll('.currency-symbol').forEach(el => el.textContent = symbol);
+        }
+        
+        window.onload = init;
+    </script>
+</body>
+</html>
